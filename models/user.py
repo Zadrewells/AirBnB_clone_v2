@@ -26,4 +26,3 @@ class User(BaseModel, Base):
         )
     else:
         email = password = first_name = last_name = ''
-do something
