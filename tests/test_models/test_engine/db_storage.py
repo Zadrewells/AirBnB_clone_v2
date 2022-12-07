@@ -11,4 +11,3 @@ from models.user import User
         "This test only work in DBStorage")
 class TestDBStorage(unittest.TestCase):
         """ tests for db """
-why
