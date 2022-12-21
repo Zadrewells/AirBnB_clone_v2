@@ -1,26 +1,29 @@
 #!/usr/bin/python3
-"""
-generates a .tgz archive from the contents
-of the web_static folder of your AirBnB Clone repo
-"""
-from os.path import isdir
-from datetime import datetime
-from fabric.api import local
+"""A module for Fabric script that generates a .tgz archive."""
 import os
+from datetime import datetime
+from fabric.api import local, runs_once
 
 
+@runs_once
 def do_pack():
-    """ creates a q.tgz file"""
-
-    datet = datetime.now().strftime("%Y%m%d%H%M%S")
-    checkifdir = isdir("versions")
-    if checkifdir is False:
-        # if versions is not created create it
-        local("mkdir versions")
-    f = "versions/web_static_{}.tgz".format(datet)
-    local("tar -cvzf {} web_static".format(f))
-    # return the archive path if the archive has been correctly generated
-    if not (os.path.exists(f)):
-        return None
-    else:
-        return f
+    """Archives the static files."""
+    if not os.path.isdir("versions"):
+        os.mkdir("versions")
+    d_time = datetime.now()
+    output = "versions/web_static_{}{}{}{}{}{}.tgz".format(
+        d_time.year,
+        d_time.month,
+        d_time.day,
+        d_time.hour,
+        d_time.minute,
+        d_time.second
+    )
+    try:
+        print("Packing web_static to {}".format(output))
+        local("tar -cvzf {} web_static".format(output))
+        size = os.stat(output).st_size
+        print("web_static packed: {} -> {} Bytes".format(output, size))
+    except Exception:
+        output = None
+    return output

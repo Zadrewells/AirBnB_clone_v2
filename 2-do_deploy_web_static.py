@@ -1,58 +1,52 @@
 #!/usr/bin/python3
 """
-generates a .tgz archive from the contents
-of the web_static folder of your AirBnB Clone repo
+Fabric script that distributes an archive to your web servers
 """
 
-from os.path import isdir
 from datetime import datetime
-from fabric.operations import local, put, run
+from fabric.api import *
 import os
-from fabric.api import env
-from pathlib import Path
 
-
-env.hosts = ['35.185.74.67', '34.148.161.130']
+env.hosts = ["35.174.204.127", "100.25.46.54"]
+env.user = "ubuntu"
 
 
 def do_pack():
-    """ creates a q.tgz file"""
+    """
+        return the archive path if archive has generated correctly.
+    """
 
-    datet = datetime.now().strftime("%Y%m%d%H%M%S")
-    checkifdir = isdir("versions")
-    if checkifdir is False:
-        # if versions is not created create it
-        local("mkdir versions")
-    f = "versions/web_static_{}.tgz".format(datet)
-    local("tar -cvzf {} web_static".format(f))
-    # return the archive path if the archive has been correctly generated
-    if not (os.path.exists(f)):
-        return None
+    local("mkdir -p versions")
+    date = datetime.now().strftime("%Y%m%d%H%M%S")
+    archived_f_path = "versions/web_static_{}.tgz".format(date)
+    t_gzip_archive = local("tar -cvzf {} web_static".format(archived_f_path))
+
+    if t_gzip_archive.succeeded:
+        return archived_f_path
     else:
-        return f
+        return None
 
 
 def do_deploy(archive_path):
-    """distributes an archive to your web servers"""
+    """
+        Distribute archive.
+    """
+    if os.path.exists(archive_path):
+        archived_file = archive_path[9:]
+        newest_version = "/data/web_static/releases/" + archived_file[:-4]
+        archived_file = "/tmp/" + archived_file
+        put(archive_path, "/tmp/")
+        run("sudo mkdir -p {}".format(newest_version))
+        run("sudo tar -xzf {} -C {}/".format(archived_file,
+                                             newest_version))
+        run("sudo rm {}".format(archived_file))
+        run("sudo mv {}/web_static/* {}".format(newest_version,
+                                                newest_version))
+        run("sudo rm -rf {}/web_static".format(newest_version))
+        run("sudo rm -rf /data/web_static/current")
+        run("sudo ln -s {} /data/web_static/current".format(newest_version))
 
-    path = Path(archive_path)
-    existsarchpath = path.is_file()
-    if existsarchpath is True:
-        try:
-            f = archive_path.split("/")[-1]
-            nod = f.split(".")[0]
-            path = "/data/web_static/releases/"
-            put(archive_path, '/tmp/')
-            run('sudo mkdir -p {}{}/'.format(path, nod))
-            run('tar -xzf /tmp/{} -C {}{}/'.format(f, path, nod))
-            run('rm /tmp/{}'.format(f))
-            run('mv {0}{1}/web_static/* {0}{1}/'.format(path, nod))
-            run('rm -rf {}{}/web_static'.format(path, nod))
-            run('rm -rf /data/web_static/current')
-            run('sudo ln -s {}{}/ /data/web_static/current'.format(path, nod))
-            return True
-            # all operations have been done correctly
-        except Exception:
-            return False
-    else:
-       return False
+        print("New version deployed!")
+        return True
+
+    return False
