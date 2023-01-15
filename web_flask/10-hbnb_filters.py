@@ -2,7 +2,7 @@
 """Starts a Flask web application.
 The application listens on 0.0.0.0, port 5000.
 Routes:
-    /cities_by_states: HTML page with a list of all states and related cities.
+    /hbnb_filters: HBnB HTML filters page.
 """
 from models import storage
 from flask import Flask
@@ -11,13 +11,13 @@ from flask import render_template
 app = Flask(__name__)
 
 
-@app.route("/cities_by_states", strict_slashes=False)
-def cities_by_states():
-    """Displays an HTML page with a list of all states and related cities.
-    States/cities are sorted by name.
-    """
+@app.route("/hbnb_filters", strict_slashes=False)
+def hbnb_filters():
+    """Displays the main HBnB filters HTML page."""
     states = storage.all("State")
-    return render_template("8-cities_by_states.html", states=states)
+    amenities = storage.all("Amenity")
+    return render_template("10-hbnb_filters.html",
+                           states=states, amenities=amenities)
 
 
 @app.teardown_appcontext
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 """Starts a Flask web application.
 The application listens on 0.0.0.0, port 5000.
 Routes:
-    /cities_by_states: HTML page with a list of all states and related cities.
+    /hbnb_filters: HBnB HTML filters page.
 """
 from models import storage
 from flask import Flask
@@ -40,13 +40,13 @@ from flask import render_template
 app = Flask(__name__)
 
 
-@app.route("/cities_by_states", strict_slashes=False)
-def cities_by_states():
-    """Displays an HTML page with a list of all states and related cities.
-    States/cities are sorted by name.
-    """
+@app.route("/hbnb_filters", strict_slashes=False)
+def hbnb_filters():
+    """Displays the main HBnB filters HTML page."""
     states = storage.all("State")
-    return render_template("8-cities_by_states.html", states=states)
+    amenities = storage.all("Amenity")
+    return render_template("10-hbnb_filters.html",
+                           states=states, amenities=amenities)
 
 
 @app.teardown_appcontext
